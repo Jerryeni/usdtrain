@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { ethers, formatUnits } from "ethers";
 import { ADDRESSES } from "../lib/contracts/addresses";
-import { PRESALE_ABI, ERC20_ABI } from "../lib/contracts/abis";
 import {
   getWeb3Provider,
   WalletNotInstalledError,
@@ -9,7 +8,9 @@ import {
   isWalletAvailable,
   promptWalletInstallation
 } from "../lib/web3/provider";
+import { PRESALE_ABI, ERC20_ABI } from "../lib/contracts/abis";
 import { UCCInfo, UserUCCInfo } from "../lib/types";
+// import { PRESALE_ABI, ERC20_ABI } from "../lib/contracts/abis"; // REMOVE: Not needed, use inline ABI or import only where used
 
 export enum PurchaseStatus {
     IDLE = "IDLE",
@@ -60,6 +61,18 @@ export function usePresale() {
             console.log("Initializing wallet connection...");
             const _provider = await getWeb3Provider();
             const _signer = await _provider.getSigner();
+            // Request accounts if not already connected
+            if (window.ethereum && window.ethereum.request) {
+                try {
+                    await window.ethereum.request({ method: "eth_requestAccounts" });
+                } catch (err: any) {
+                    if (err.code === -32002) {
+                        console.error("Connection Pending: A connection request is already pending in your wallet. Please check your wallet and try again.");
+                        return;
+                    }
+                    throw err;
+                }
+            }
             const _userAddress = await _signer.getAddress();
 
             if (!_userAddress) {
@@ -250,23 +263,28 @@ export function usePresale() {
 
     async function getUCCInfo(ps: ethers.Contract): Promise<UCCInfo> {
         try {
-            const totalInvestmentsUSDT = await ps.totalInvestmentsUSDT();
-            const totalInvestmentsBNB = await ps.totalInvestmentsBNB();
-            const totalUsers = await ps.totalUsers();
-            const priceUSDT = await ps.price();
-            const priceBNB = await ps.priceBNB();
-            const totalTokensToBEDistributed =
-                await ps.totalTokensToBEDistributed();
+            // Use getContractStats for main stats
+            const stats = await ps.getContractStats();
+            // stats: [_totalUsers, _totalActivatedUsers, _globalPoolBalance, _totalDistributed, _eligibleUsersCount]
+            // You may need to adjust the mapping below based on actual contract return order
+            const totalUsers = Number(stats[0]);
+            // Fallbacks for price and tokens
+            let priceUSDT = 0, priceBNB = 0, totalTokensToBEDistributed = 0;
+            try { priceUSDT = Number(await ps.price()); } catch (e) { console.warn("price() not found", e); }
+            try { priceBNB = Number(await ps.priceBNB()); } catch (e) { console.warn("priceBNB() not found", e); }
+            try { totalTokensToBEDistributed = Number(await ps.totalTokensToBEDistributed()); } catch (e) { console.warn("totalTokensToBEDistributed() not found", e); }
 
-            setTotalToken(b2i(totalTokensToBEDistributed));
+            setTotalToken(totalTokensToBEDistributed);
+
+            // If you want to display pool/earnings, extract from stats[2..4] as needed
 
             return {
-                totalInvestmentsUSDT: b2i(totalInvestmentsUSDT),
-                totalInvestmentsBNB: b2f(totalInvestmentsBNB),
+                totalInvestmentsUSDT: 0, // Not available in ABI, set to 0 or remove from UI
+                totalInvestmentsBNB: 0,  // Not available in ABI, set to 0 or remove from UI
                 totalUsers,
-                priceUSDT: b2f(priceUSDT),
-                priceBNB: b2f(priceBNB),
-                totalTokensToBEDistributed: b2i(totalTokensToBEDistributed),
+                priceUSDT,
+                priceBNB,
+                totalTokensToBEDistributed,
             };
         } catch (error: any) {
             console.error('Error fetching UCC info:', error);
@@ -287,14 +305,20 @@ export function usePresale() {
         cpage: number,
     ): Promise<UserUCCInfo> {
         try {
-            const userId = await ps.id(ua);
-            const usersInfo = await ps.usersInfo(userId);
+            // Use getUserIdByAddress and getUserInfo(address)
+            const userId = await ps.getUserIdByAddress(ua);
+            const usersInfo = await ps.getUserInfo(ua);
             let activityLength = 0;
             let recentActivities: any[] = [];
 
-            if (parseInt(userId.toString()) !== 0) {
-                activityLength = await ps.getUserActivitiesLength(userId);
-                recentActivities = await ps.getRecentActivities(userId, cpage);
+            // If you have activity methods, use them, else skip
+            try {
+                if (parseInt(userId.toString()) !== 0 && ps.getUserActivitiesLength && ps.getRecentActivities) {
+                    activityLength = await ps.getUserActivitiesLength(userId);
+                    recentActivities = await ps.getRecentActivities(userId, cpage);
+                }
+            } catch (e) {
+                console.warn("Activity methods not found in contract", e);
             }
 
             return {
