@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { ethers, formatUnits } from "ethers";
-import { ADDRESSES } from "../lib/contracts/addresses";
+import { ADDRESSES } from "@/lib/contracts/addresses";
 import {
   getWeb3Provider,
   WalletNotInstalledError,
   NetworkSwitchError,
   isWalletAvailable,
   promptWalletInstallation
-} from "../lib/web3/provider";
-import { PRESALE_ABI, ERC20_ABI } from "../lib/contracts/abis";
-import { UCCInfo, UserUCCInfo } from "../lib/types";
+} from "@/lib/web3/provider";
+import { PRESALE_ABI, ERC20_ABI } from "@/lib/contracts/abis";
+import { UCCInfo, UserUCCInfo } from "@/lib/types";
 // import { PRESALE_ABI, ERC20_ABI } from "../lib/contracts/abis"; // REMOVE: Not needed, use inline ABI or import only where used
 
 export enum PurchaseStatus {

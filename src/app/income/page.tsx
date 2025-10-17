@@ -2,9 +2,20 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+/**
+ * NOTE: useWallet must be used within a WalletProvider context.
+ * Now using the @ alias for all lib imports.
+ */
+import { useWallet } from '@/lib/wallet';
+console.log('useWallet imported:', typeof useWallet);
+import { useUserInfo } from '@/lib/hooks/useUserInfo';
+import { useContractStats } from '@/lib/hooks/useContractStats';
 
 export default function IncomeDetails() {
   const [isClient, setIsClient] = useState(false);
+  const { address } = useWallet();
+  const { data: userInfo } = useUserInfo(address);
+  const { data: contractStats } = useContractStats();
 
   const animateCounters = useCallback(() => {
     if (!isClient) return;
@@ -80,6 +91,12 @@ export default function IncomeDetails() {
     window.history.back();
   };
 
+  // Helper functions for formatting
+  const formatUsd = (value: any) =>
+    value !== undefined && value !== null
+      ? `$${(Number(value) / 1e18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : '$0.00';
+
   return (
     <div className="relative z-10 min-h-screen">
       {/* Animated USDT Rain Background */}
@@ -116,22 +133,36 @@ export default function IncomeDetails() {
 
           <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="text-center">
-              <div className="text-xl font-bold text-white counter-animation">$2,847.50</div>
+              <div className="text-xl font-bold text-white counter-animation">
+                {formatUsd(userInfo?.totalEarned)}
+              </div>
               <p className="text-gray-400 text-xs">Total Earned</p>
             </div>
             <div className="text-center">
-              <div className="text-xl font-bold text-green-400 counter-animation">$1,950.00</div>
+              <div className="text-xl font-bold text-green-400 counter-animation">
+                {formatUsd(userInfo?.totalWithdrawn)}
+              </div>
               <p className="text-gray-400 text-xs">Total Claimed</p>
             </div>
             <div className="text-center">
-              <div className="text-xl font-bold text-cyan-400 counter-animation">$897.50</div>
+              <div className="text-xl font-bold text-cyan-400 counter-animation">
+                {formatUsd(
+                  userInfo?.totalEarned && userInfo?.totalWithdrawn
+                    ? BigInt(userInfo.totalEarned) - BigInt(userInfo.totalWithdrawn)
+                    : 0
+                )}
+              </div>
               <p className="text-gray-400 text-xs">Available</p>
             </div>
           </div>
 
           <button className="w-full claim-button text-black font-bold py-4 px-6 rounded-xl orbitron text-lg">
             <i className="fas fa-download mr-2"></i>
-            Claim All ($897.50)
+            Claim All ({formatUsd(
+              userInfo?.totalEarned && userInfo?.totalWithdrawn
+                ? BigInt(userInfo.totalEarned) - BigInt(userInfo.totalWithdrawn)
+                : 0
+            )})
           </button>
         </div>
       </section>

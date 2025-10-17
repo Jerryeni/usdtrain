@@ -2,7 +2,11 @@ import { ethers } from 'ethers';
 import USDTRainABI from './abi/USDTRain.json';
 
 // Contract address - update this with your deployed contract address
-export const USDTRAIN_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_USDTRAIN_CONTRACT_ADDRESS || '0xc12610a8e2b4F94Ee4A7B7bBFE27Cf9323502a17';
+export const USDTRAIN_CONTRACT_ADDRESS = (() => {
+  const addr = process.env.NEXT_PUBLIC_USDTRAIN_CONTRACT_ADDRESS;
+  if (!addr) throw new Error('Missing required environment variable: NEXT_PUBLIC_USDTRAIN_CONTRACT_ADDRESS');
+  return addr;
+})();
 
 /**
  * Get a read-only contract instance for view functions

@@ -40,6 +40,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setProvider(rpcProvider);
 
     // If injected provider is available, set up event listeners
+    let accountsChangedHandler: ((accounts: string[]) => void) | undefined;
+    let chainChangedHandler: ((chainHex: string) => void) | undefined;
+
     if (isInjected && window.ethereum) {
       const injected = new ethers.BrowserProvider(window.ethereum);
 
@@ -55,7 +58,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
 
       // Listen to account & chain changes via EIP-1193
-      window.ethereum.on?.("accountsChanged", async (accounts: string[]) => {
+      accountsChangedHandler = async (accounts: string[]) => {
         if (!accounts || accounts.length === 0) {
           setAddress(null);
           setSigner(null);
@@ -63,13 +66,29 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           setAddress(ethers.getAddress(accounts[0]));
           setSigner(await injected.getSigner());
         }
-      });
-
-      window.ethereum.on?.("chainChanged", (chainHex: string) => {
+      };
+      chainChangedHandler = (chainHex: string) => {
         const id = Number(chainHex);
         setChainId(id);
-      });
+      };
+
+      window.ethereum.on?.("accountsChanged", accountsChangedHandler);
+      window.ethereum.on?.("chainChanged", chainChangedHandler);
     }
+
+    // Cleanup event listeners on unmount
+    return () => {
+      if (isInjected && window.ethereum) {
+        if (accountsChangedHandler) {
+          // @ts-ignore: removeListener is present on most injected providers (MetaMask, etc.)
+          (window.ethereum as any).removeListener?.("accountsChanged", accountsChangedHandler);
+        }
+        if (chainChangedHandler) {
+          // @ts-ignore: removeListener is present on most injected providers (MetaMask, etc.)
+          (window.ethereum as any).removeListener?.("chainChanged", chainChangedHandler);
+        }
+      }
+    };
   }, [isInjected]);
 
   const connect = async () => {

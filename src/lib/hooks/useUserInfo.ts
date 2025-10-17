@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getReadContract } from '../contracts/USDTRain';
 import { useWallet } from '../wallet';
+import { useToast } from '@/components/ui/use-toast';
 import { UserInfo } from '../contracts/USDTRain';
 
 /**
@@ -8,6 +9,7 @@ import { UserInfo } from '../contracts/USDTRain';
  */
 export function useUserInfo(userAddress?: string | null) {
   const { provider } = useWallet();
+  const { toast } = useToast();
 
   return useQuery({
     queryKey: ['usdtrain', 'userInfo', userAddress],
@@ -33,8 +35,13 @@ export function useUserInfo(userAddress?: string | null) {
           userName: result[9],
           contactNumber: result[10],
         };
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching user info:', error);
+        toast({
+          title: "Failed to fetch user info",
+          description: error?.message || String(error),
+          variant: "destructive",
+        });
         throw error;
       }
     },

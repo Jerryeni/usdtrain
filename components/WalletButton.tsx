@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useWallet } from '../lib/wallet';
+import { useWallet } from '../src/lib/wallet';
 
 interface WalletButtonProps {
   className?: string;

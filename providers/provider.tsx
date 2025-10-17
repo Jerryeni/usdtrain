@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useEffect } from 'react';
-import { usePresale as usePresaleHook } from '../hooks/usePresale';
+import { usePresale as usePresaleHook } from '../src/hooks/usePresale';
 
 const PresaleContext = createContext<ReturnType<typeof usePresaleHook> | null>(null);
 

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getReadContract } from '../contracts/USDTRain';
 import { useWallet } from '../wallet';
+import { useToast } from '@/components/ui/use-toast';
 import { ContractStats } from '../contracts/USDTRain';
 
 /**
@@ -8,6 +9,7 @@ import { ContractStats } from '../contracts/USDTRain';
  */
 export function useContractStats() {
   const { provider } = useWallet();
+  const { toast } = useToast();
 
   return useQuery({
     queryKey: ['usdtrain', 'contractStats'],
@@ -27,8 +29,13 @@ export function useContractStats() {
           _totalDistributed: result[3],
           _eligibleUsersCount: result[4],
         };
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching contract stats:', error);
+        toast({
+          title: "Failed to fetch contract stats",
+          description: error?.message || String(error),
+          variant: "destructive",
+        });
         throw error;
       }
     },

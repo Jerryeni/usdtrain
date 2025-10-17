@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePresale } from '../../providers/provider';
-import { isWalletAvailable } from '../../lib/web3/provider';
+import { isWalletAvailable } from '../lib/web3/provider';
 
 export default function Dashboard() {
   const [isClient, setIsClient] = useState(false);

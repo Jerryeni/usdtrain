@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Orbitron } from "next/font/google";
 import Script from "next/script";
 import { PresaleProvider } from "../../providers/provider";
-import { WalletProvider } from "../../lib/wallet";
+import { WalletProvider } from "@/lib/wallet";
+import { ToastProvider } from "@/components/ui/use-toast";
 import "./globals.css";
 
 const inter = Inter({
@@ -51,11 +52,13 @@ export default function RootLayout({
             __html: `window.FontAwesomeConfig = { autoReplaceSvg: 'nest'}`,
           }}
         />
-        <WalletProvider>
-          <PresaleProvider>
-            {children}
-          </PresaleProvider>
-        </WalletProvider>
+        <ToastProvider>
+          <WalletProvider>
+            <PresaleProvider>
+              {children}
+            </PresaleProvider>
+          </WalletProvider>
+        </ToastProvider>
       </body>
     </html>
   );

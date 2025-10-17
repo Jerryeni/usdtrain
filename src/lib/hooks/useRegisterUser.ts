@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWriteContract } from '../contracts/USDTRain';
 import { useWallet } from '../wallet';
+import { useToast } from '@/components/ui/use-toast';
 
 /**
  * Hook for registering a new user in the USDTRain contract
@@ -8,6 +9,7 @@ import { useWallet } from '../wallet';
 export function useRegisterUser() {
   const { signer } = useWallet();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (sponsorId: bigint): Promise<{ transactionHash: string; userId: bigint }> => {
@@ -47,7 +49,7 @@ export function useRegisterUser() {
           transactionHash: tx.hash,
           userId
         };
-      } catch (error) {
+      } catch (error: any) {
         console.error('Registration failed:', error);
         throw error;
       }
@@ -57,8 +59,13 @@ export function useRegisterUser() {
       // Invalidate and refetch user data
       queryClient.invalidateQueries({ queryKey: ['usdtrain'] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Registration error:', error);
+      toast({
+        title: "Registration Failed",
+        description: error?.message || String(error),
+        variant: "destructive",
+      });
     },
   });
 }
