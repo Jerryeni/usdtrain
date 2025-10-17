@@ -8,16 +8,6 @@ interface EthereumRequestParams {
 }
 
 // Type-safe response from Ethereum providers
-interface EthereumResponse {
-  jsonrpc?: string;
-  id?: number;
-  result?: unknown;
-  error?: {
-    code: number;
-    message: string;
-    data?: unknown;
-  };
-}
 
 export class WalletNotInstalledError extends Error {
   constructor() {

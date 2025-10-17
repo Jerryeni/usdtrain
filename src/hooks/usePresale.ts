@@ -65,8 +65,9 @@ export function usePresale() {
             if (window.ethereum && window.ethereum.request) {
                 try {
                     await window.ethereum.request({ method: "eth_requestAccounts" });
-                } catch (err: any) {
-                    if (err.code === -32002) {
+                } catch (err) {
+                    const error = err as { code?: number };
+                    if (error.code === -32002) {
                         console.error("Connection Pending: A connection request is already pending in your wallet. Please check your wallet and try again.");
                         return;
                     }
@@ -97,18 +98,18 @@ export function usePresale() {
 
             console.log("Wallet connected successfully:", _userAddress);
             console.log(`Successfully connected to BSC ${ADDRESSES.CHAIN_ID === 97 ? 'Testnet' : 'Mainnet'}`);
-        } catch (error: any) {
+        } catch (error) {
             console.error("Wallet connection failed:", error);
 
             if (error instanceof WalletNotInstalledError) {
-                console.error("Wallet Required:", error.message);
+                console.error("Wallet Required:", (error as Error).message);
             } else if (error instanceof NetworkSwitchError) {
-                console.error("Network Error:", error.message);
-            } else if (error.code === -32002) {
+                console.error("Network Error:", (error as Error).message);
+            } else if ((error as { code?: number })?.code === -32002) {
                 // Handle "Request already pending" error
                 console.error("Connection Pending: A connection request is already pending in your wallet. Please check your wallet and try again.");
             } else {
-                console.error(`Wallet connection failed: ${error.message || 'Please try again.'}`);
+                console.error(`Wallet connection failed: ${(error as Error)?.message || 'Please try again.'}`);
             }
         } finally {
             setIsConnecting(false);
@@ -192,16 +193,17 @@ export function usePresale() {
             setStatus(PurchaseStatus.CONFIRMED);
             console.log(`Successfully purchased tokens with ${amount} USDT!`);
             setStatus(PurchaseStatus.IDLE);
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error during USDT purchase:', error);
             setStatus(PurchaseStatus.ERROR);
 
             if (error instanceof WalletNotInstalledError) {
-                console.error("Wallet Required:", error.message);
+                console.error("Wallet Required:", (error as Error).message);
             } else if (error instanceof NetworkSwitchError) {
-                console.error("Network Error:", error.message);
+                console.error("Network Error:", (error as Error).message);
             } else {
-                console.error("Purchase Failed:", error.reason || error.message || 'An unexpected error occurred.');
+                const err = error as { reason?: string; message?: string };
+                console.error("Purchase Failed:", err.reason || err.message || 'An unexpected error occurred.');
             }
         }
     };
@@ -247,16 +249,17 @@ export function usePresale() {
             setStatus(PurchaseStatus.CONFIRMED);
             console.log(`Successfully purchased tokens with ${amount} BNB!`);
             setStatus(PurchaseStatus.IDLE);
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error during BNB purchase:', error);
             setStatus(PurchaseStatus.ERROR);
 
             if (error instanceof WalletNotInstalledError) {
-                console.error("Wallet Required:", error.message);
+                console.error("Wallet Required:", (error as Error).message);
             } else if (error instanceof NetworkSwitchError) {
-                console.error("Network Error:", error.message);
+                console.error("Network Error:", (error as Error).message);
             } else {
-                console.error("Purchase Failed:", error.reason || error.message || 'An unexpected error occurred.');
+                const err = error as { reason?: string; message?: string };
+                console.error("Purchase Failed:", err.reason || err.message || 'An unexpected error occurred.');
             }
         }
     };
@@ -286,7 +289,7 @@ export function usePresale() {
                 priceBNB,
                 totalTokensToBEDistributed,
             };
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error fetching UCC info:', error);
             return {
                 totalInvestmentsUSDT: 0,
@@ -309,7 +312,14 @@ export function usePresale() {
             const userId = await ps.getUserIdByAddress(ua);
             const usersInfo = await ps.getUserInfo(ua);
             let activityLength = 0;
-            let recentActivities: any[] = [];
+            let recentActivities: {
+                id: bigint;
+                userId: bigint;
+                activityType: number;
+                amount: bigint;
+                timestamp: bigint;
+                txHash: string;
+            }[] = [];
 
             // If you have activity methods, use them, else skip
             try {
@@ -327,7 +337,7 @@ export function usePresale() {
                 recentActivities,
                 activityLength: parseInt(activityLength.toString()),
             };
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error fetching user info:', error);
             return {
                 userId: 0,
@@ -357,10 +367,10 @@ export function usePresale() {
     };
 }
 
-export function b2i(amt: any): number {
-    return parseInt(formatUnits(amt, 18));
+export function b2i(amt: unknown): number {
+    return parseInt(formatUnits(amt as string, 18));
 }
 
-export function b2f(amt: any): number {
-    return parseFloat(formatUnits(amt, 18));
+export function b2f(amt: unknown): number {
+    return parseFloat(formatUnits(amt as string, 18));
 }

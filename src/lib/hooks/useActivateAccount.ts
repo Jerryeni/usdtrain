@@ -87,13 +87,13 @@ export function useActivateAccount() {
       // Invalidate and refetch user data
       queryClient.invalidateQueries({ queryKey: ['usdtrain'] });
     },
-    onError: (error: any) => {
-      console.error('Account activation error:', error);
-      toast({
-        title: "Account Activation Failed",
-        description: error?.message || String(error),
-        variant: "destructive",
-      });
+    onError: (error: unknown) => {
+        console.error('Account activation error:', error);
+        toast({
+            title: "Account Activation Failed",
+            description: (error as Error)?.message || String(error),
+            variant: "destructive",
+        });
     },
   });
 }

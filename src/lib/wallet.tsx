@@ -4,10 +4,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { ethers } from "ethers";
 
 // Type-safe interfaces for Web3 providers using ethers types
-interface EthereumRequestParams {
-  method: string;
-  params?: readonly unknown[];
-}
 
 // Window interface extension for Web3 - using type assertion to avoid conflicts
 
@@ -80,12 +76,12 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => {
       if (isInjected && window.ethereum) {
         if (accountsChangedHandler) {
-          // @ts-ignore: removeListener is present on most injected providers (MetaMask, etc.)
-          (window.ethereum as any).removeListener?.("accountsChanged", accountsChangedHandler);
+          // @ts-expect-error: removeListener is present on most injected providers (MetaMask, etc.)
+          (window.ethereum as unknown as { removeListener?: (event: string, handler: (...args: unknown[]) => void) => void }).removeListener?.("accountsChanged", accountsChangedHandler);
         }
         if (chainChangedHandler) {
-          // @ts-ignore: removeListener is present on most injected providers (MetaMask, etc.)
-          (window.ethereum as any).removeListener?.("chainChanged", chainChangedHandler);
+          // @ts-expect-error: removeListener is present on most injected providers (MetaMask, etc.)
+          (window.ethereum as unknown as { removeListener?: (event: string, handler: (...args: unknown[]) => void) => void }).removeListener?.("chainChanged", chainChangedHandler);
         }
       }
     };

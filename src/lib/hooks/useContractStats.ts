@@ -29,14 +29,14 @@ export function useContractStats() {
           _totalDistributed: result[3],
           _eligibleUsersCount: result[4],
         };
-      } catch (error: any) {
-        console.error('Error fetching contract stats:', error);
-        toast({
-          title: "Failed to fetch contract stats",
-          description: error?.message || String(error),
-          variant: "destructive",
-        });
-        throw error;
+      } catch (error) {
+          console.error('Error fetching contract stats:', error);
+          toast({
+              title: "Failed to fetch contract stats",
+              description: (error as Error)?.message || String(error),
+              variant: "destructive",
+          });
+          throw error;
       }
     },
     enabled: !!provider,

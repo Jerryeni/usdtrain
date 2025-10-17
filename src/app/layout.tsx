@@ -5,6 +5,7 @@ import { PresaleProvider } from "../../providers/provider";
 import { WalletProvider } from "@/lib/wallet";
 import { ToastProvider } from "@/components/ui/use-toast";
 import "./globals.css";
+import QueryProvider from "@/components/QueryProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
   description: "Multi-level cryptocurrency referral platform with global pool rewards",
 };
 
+// create a singleton QueryClient at module scope (safe for this use)
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,9 +38,7 @@ export default function RootLayout({
           referrerPolicy="no-referrer"
         />
       </head>
-      <body
-        className={`${inter.variable} ${orbitron.variable} antialiased`}
-      >
+      <body className={`${inter.variable} ${orbitron.variable} antialiased`}>
         <Script
           src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"
           crossOrigin="anonymous"
@@ -49,16 +49,16 @@ export default function RootLayout({
           id="fontawesome-config"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
-            __html: `window.FontAwesomeConfig = { autoReplaceSvg: 'nest'}`,
+            __html: `window.FontAwesomeConfig = { autoReplaceSvg: 'nest' }`,
           }}
         />
-        <ToastProvider>
-          <WalletProvider>
-            <PresaleProvider>
-              {children}
-            </PresaleProvider>
-          </WalletProvider>
-        </ToastProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <WalletProvider>
+              <PresaleProvider>{children}</PresaleProvider>
+            </WalletProvider>
+          </ToastProvider>
+        </QueryProvider>
       </body>
     </html>
   );

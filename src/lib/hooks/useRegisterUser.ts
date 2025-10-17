@@ -49,9 +49,9 @@ export function useRegisterUser() {
           transactionHash: tx.hash,
           userId
         };
-      } catch (error: any) {
-        console.error('Registration failed:', error);
-        throw error;
+      } catch (error) {
+          console.error('Registration failed:', error);
+          throw error;
       }
     },
     onSuccess: (data) => {
@@ -59,13 +59,13 @@ export function useRegisterUser() {
       // Invalidate and refetch user data
       queryClient.invalidateQueries({ queryKey: ['usdtrain'] });
     },
-    onError: (error: any) => {
-      console.error('Registration error:', error);
-      toast({
-        title: "Registration Failed",
-        description: error?.message || String(error),
-        variant: "destructive",
-      });
+    onError: (error: unknown) => {
+        console.error('Registration error:', error);
+        toast({
+            title: "Registration Failed",
+            description: (error as Error)?.message || String(error),
+            variant: "destructive",
+        });
     },
   });
 }

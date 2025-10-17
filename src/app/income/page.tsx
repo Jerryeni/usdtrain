@@ -15,7 +15,7 @@ export default function IncomeDetails() {
   const [isClient, setIsClient] = useState(false);
   const { address } = useWallet();
   const { data: userInfo } = useUserInfo(address);
-  const { data: contractStats } = useContractStats();
+  const { data: contractStats } = useContractStats(); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const animateCounters = useCallback(() => {
     if (!isClient) return;
@@ -92,10 +92,10 @@ export default function IncomeDetails() {
   };
 
   // Helper functions for formatting
-  const formatUsd = (value: any) =>
-    value !== undefined && value !== null
-      ? `$${(Number(value) / 1e18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-      : '$0.00';
+  const formatUsd = (value: unknown) =>
+      value !== undefined && value !== null
+        ? `$${(Number(value) / 1e18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : '$0.00';
 
   return (
     <div className="relative z-10 min-h-screen">

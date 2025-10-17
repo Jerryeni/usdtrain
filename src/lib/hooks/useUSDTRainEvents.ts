@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getReadContract } from '../contracts/USDTRain';
 import { useWallet } from '../wallet';
-import { UserRegisteredEvent, UserActivatedEvent, LevelIncomePaidEvent, ProfileUpdatedEvent } from '../contracts/USDTRain';
 
 /**
  * Hook for listening to USDTRain contract events and updating UI state

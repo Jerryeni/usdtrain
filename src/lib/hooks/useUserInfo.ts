@@ -35,14 +35,14 @@ export function useUserInfo(userAddress?: string | null) {
           userName: result[9],
           contactNumber: result[10],
         };
-      } catch (error: any) {
-        console.error('Error fetching user info:', error);
-        toast({
-          title: "Failed to fetch user info",
-          description: error?.message || String(error),
-          variant: "destructive",
-        });
-        throw error;
+      } catch (error) {
+          console.error('Error fetching user info:', error);
+          toast({
+              title: "Failed to fetch user info",
+              description: (error as Error)?.message || String(error),
+              variant: "destructive",
+          });
+          throw error;
       }
     },
     enabled: !!userAddress && !!provider,
