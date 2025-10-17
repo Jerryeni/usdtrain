@@ -1,10 +1,38 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 
 export default function IncomeDetails() {
   const [isClient, setIsClient] = useState(false);
+
+  const animateCounters = useCallback(() => {
+    if (!isClient) return;
+
+    const counters = document.querySelectorAll('.counter-animation');
+    counters.forEach(counter => {
+      const element = counter as HTMLElement;
+      if (!element) return;
+
+      const target = parseFloat(element.textContent?.replace(/[$,]/g, '') || '0');
+      const increment = target / 100;
+      let current = 0;
+
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+
+        if (element.textContent?.includes('$')) {
+          element.textContent = '$' + current.toFixed(2);
+        } else {
+          element.textContent = Math.floor(current).toString();
+        }
+      }, 20);
+    });
+  }, [isClient]);
 
   useEffect(() => {
     setIsClient(true);
@@ -46,35 +74,7 @@ export default function IncomeDetails() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, []);
-
-  const animateCounters = () => {
-    if (!isClient) return;
-
-    const counters = document.querySelectorAll('.counter-animation');
-    counters.forEach(counter => {
-      const element = counter as HTMLElement;
-      if (!element) return;
-
-      const target = parseFloat(element.textContent?.replace(/[$,]/g, '') || '0');
-      const increment = target / 100;
-      let current = 0;
-
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-          current = target;
-          clearInterval(timer);
-        }
-
-        if (element.textContent?.includes('$')) {
-          element.textContent = '$' + current.toFixed(2);
-        } else {
-          element.textContent = Math.floor(current).toString();
-        }
-      }, 20);
-    });
-  };
+  }, [animateCounters]);
 
   const goBack = () => {
     window.history.back();

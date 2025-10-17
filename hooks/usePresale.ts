@@ -9,7 +9,6 @@ import {
   isWalletAvailable,
   promptWalletInstallation
 } from "../lib/web3/provider";
-import { toast } from "../components/ui/use-toast";
 import { UCCInfo, UserUCCInfo } from "../lib/types";
 
 export enum PurchaseStatus {
@@ -84,43 +83,19 @@ export function usePresale() {
             setUserUCCInfo(useri);
 
             console.log("Wallet connected successfully:", _userAddress);
-            toast({
-                title: "Connected",
-                description: `Successfully connected to BSC ${ADDRESSES.CHAIN_ID === 97 ? 'Testnet' : 'Mainnet'}`,
-                duration: 3000,
-            });
+            console.log(`Successfully connected to BSC ${ADDRESSES.CHAIN_ID === 97 ? 'Testnet' : 'Mainnet'}`);
         } catch (error: any) {
             console.error("Wallet connection failed:", error);
 
             if (error instanceof WalletNotInstalledError) {
-                toast({
-                    title: "Wallet Required",
-                    description: error.message,
-                    variant: "destructive",
-                    duration: 5000,
-                });
+                console.error("Wallet Required:", error.message);
             } else if (error instanceof NetworkSwitchError) {
-                toast({
-                    title: "Network Error",
-                    description: error.message,
-                    variant: "destructive",
-                    duration: 4000,
-                });
+                console.error("Network Error:", error.message);
             } else if (error.code === -32002) {
                 // Handle "Request already pending" error
-                toast({
-                    title: "Connection Pending",
-                    description: "A connection request is already pending in your wallet. Please check your wallet and try again.",
-                    variant: "destructive",
-                    duration: 4000,
-                });
+                console.error("Connection Pending: A connection request is already pending in your wallet. Please check your wallet and try again.");
             } else {
-                toast({
-                    title: "Connection Failed",
-                    description: `Wallet connection failed: ${error.message || 'Please try again.'}`,
-                    variant: "destructive",
-                    duration: 3000,
-                });
+                console.error(`Wallet connection failed: ${error.message || 'Please try again.'}`);
             }
         } finally {
             setIsConnecting(false);
@@ -148,19 +123,8 @@ export function usePresale() {
             setCurPage(1);
 
             console.log("Wallet disconnected successfully.");
-            toast({
-                title: "Disconnected",
-                description: "Wallet disconnected successfully.",
-                duration: 3000,
-            });
         } catch (error) {
             console.error("Error disconnecting wallet:", error);
-            toast({
-                title: "Error",
-                description: "Error disconnecting wallet.",
-                variant: "destructive",
-                duration: 3000,
-            });
         }
     }
 
@@ -170,12 +134,6 @@ export function usePresale() {
         const ref = parseInt(refParam || '0', 10);
         if (isNaN(ref)) {
             console.error('Invalid referral ID:', refParam);
-            toast({
-                title: "Invalid Referral",
-                description: "Invalid referral ID",
-                variant: "destructive",
-                duration: 3000,
-            });
             return 0;
         }
         return ref;
@@ -219,37 +177,18 @@ export function usePresale() {
             setUserUCCInfo(useri);
 
             setStatus(PurchaseStatus.CONFIRMED);
-            toast({
-                title: "Success",
-                description: `Successfully purchased tokens with ${amount} USDT!`,
-                duration: 3000,
-            });
+            console.log(`Successfully purchased tokens with ${amount} USDT!`);
             setStatus(PurchaseStatus.IDLE);
         } catch (error: any) {
             console.error('Error during USDT purchase:', error);
             setStatus(PurchaseStatus.ERROR);
 
             if (error instanceof WalletNotInstalledError) {
-                toast({
-                    title: "Wallet Required",
-                    description: error.message,
-                    variant: "destructive",
-                    duration: 5000,
-                });
+                console.error("Wallet Required:", error.message);
             } else if (error instanceof NetworkSwitchError) {
-                toast({
-                    title: "Network Error",
-                    description: error.message,
-                    variant: "destructive",
-                    duration: 4000,
-                });
+                console.error("Network Error:", error.message);
             } else {
-                toast({
-                    title: "Purchase Failed",
-                    description: error.reason || error.message || 'An unexpected error occurred.',
-                    variant: "destructive",
-                    duration: 3000,
-                });
+                console.error("Purchase Failed:", error.reason || error.message || 'An unexpected error occurred.');
             }
         }
     };
@@ -293,37 +232,18 @@ export function usePresale() {
             setUserUCCInfo(useri);
 
             setStatus(PurchaseStatus.CONFIRMED);
-            toast({
-                title: "Success",
-                description: `Successfully purchased tokens with ${amount} BNB!`,
-                duration: 3000,
-            });
+            console.log(`Successfully purchased tokens with ${amount} BNB!`);
             setStatus(PurchaseStatus.IDLE);
         } catch (error: any) {
             console.error('Error during BNB purchase:', error);
             setStatus(PurchaseStatus.ERROR);
 
             if (error instanceof WalletNotInstalledError) {
-                toast({
-                    title: "Wallet Required",
-                    description: error.message,
-                    variant: "destructive",
-                    duration: 5000,
-                });
+                console.error("Wallet Required:", error.message);
             } else if (error instanceof NetworkSwitchError) {
-                toast({
-                    title: "Network Error",
-                    description: error.message,
-                    variant: "destructive",
-                    duration: 4000,
-                });
+                console.error("Network Error:", error.message);
             } else {
-                toast({
-                    title: "Purchase Failed",
-                    description: error.reason || error.message || 'An unexpected error occurred.',
-                    variant: "destructive",
-                    duration: 3000,
-                });
+                console.error("Purchase Failed:", error.reason || error.message || 'An unexpected error occurred.');
             }
         }
     };

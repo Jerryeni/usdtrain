@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Orbitron } from "next/font/google";
+import Script from "next/script";
 import { PresaleProvider } from "../../providers/provider";
 import "./globals.css";
 
@@ -26,24 +27,29 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.FontAwesomeConfig = { autoReplaceSvg: 'nest'}`,
-          }}
-        />
-        <script
-          src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"
+        <link
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          rel="stylesheet"
           crossOrigin="anonymous"
           referrerPolicy="no-referrer"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
         />
       </head>
       <body
         className={`${inter.variable} ${orbitron.variable} antialiased`}
       >
+        <Script
+          src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="fontawesome-config"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `window.FontAwesomeConfig = { autoReplaceSvg: 'nest'}`,
+          }}
+        />
         <PresaleProvider>
           {children}
         </PresaleProvider>

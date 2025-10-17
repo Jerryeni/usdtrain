@@ -1,10 +1,22 @@
 import { ethers } from 'ethers';
 import { ADDRESSES } from '../contracts/addresses';
 
-// Types for better error handling
-interface Web3Error extends Error {
-  code?: number;
-  data?: any;
+// Type-safe request parameters for Ethereum providers
+interface EthereumRequestParams {
+  method: string;
+  params?: readonly unknown[];
+}
+
+// Type-safe response from Ethereum providers
+interface EthereumResponse {
+  jsonrpc?: string;
+  id?: number;
+  result?: unknown;
+  error?: {
+    code: number;
+    message: string;
+    data?: unknown;
+  };
 }
 
 export class WalletNotInstalledError extends Error {
@@ -27,7 +39,8 @@ export class NetworkSwitchError extends Error {
  */
 export function isWalletAvailable(): boolean {
   return typeof window !== 'undefined' &&
-         (window.ethereum !== undefined || (window as any).web3 !== undefined);
+         ((window as typeof window & { ethereum?: { request?: unknown } }).ethereum !== undefined ||
+          (window as typeof window & { web3?: { currentProvider?: unknown } }).web3 !== undefined);
 }
 
 /**
@@ -38,13 +51,15 @@ export function getWeb3ProviderSync(): ethers.BrowserProvider | null {
   if (typeof window === 'undefined') return null;
 
   // Check for modern ethereum providers (MetaMask, etc.)
-  if (window.ethereum) {
-    return new ethers.BrowserProvider(window.ethereum);
+  const windowWithEthereum = window as typeof window & { ethereum?: { request?: (args: EthereumRequestParams) => Promise<unknown> } };
+  if (windowWithEthereum.ethereum && typeof windowWithEthereum.ethereum.request === 'function') {
+    return new ethers.BrowserProvider(windowWithEthereum.ethereum as ethers.Eip1193Provider);
   }
 
   // Check for legacy web3 providers
-  if ((window as any).web3 && (window as any).web3.currentProvider) {
-    return new ethers.BrowserProvider((window as any).web3.currentProvider);
+  const windowWithWeb3 = window as typeof window & { web3?: { currentProvider?: ethers.Eip1193Provider } };
+  if (windowWithWeb3.web3 && windowWithWeb3.web3.currentProvider) {
+    return new ethers.BrowserProvider(windowWithWeb3.web3.currentProvider);
   }
 
   return null;
@@ -86,20 +101,23 @@ export async function switchToBNBChain(): Promise<void> {
     console.log(`Requesting network switch to BSC ${ADDRESSES.CHAIN_ID === 97 ? 'Testnet' : 'Mainnet'}...`);
 
     // Try to switch to BSC network
-    await window.ethereum!.request({
+    const windowWithEthereum = window as typeof window & { ethereum?: { request: (args: EthereumRequestParams) => Promise<unknown> } };
+    await windowWithEthereum.ethereum!.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: `0x${ADDRESSES.CHAIN_ID.toString(16)}` }],
     });
 
     console.log(`Successfully switched to BSC ${ADDRESSES.CHAIN_ID === 97 ? 'Testnet' : 'Mainnet'}`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Network switch error:', error);
 
+    const web3Error = error as { code?: number; message?: string };
     // Handle case where network doesn't exist in wallet
-    if (error.code === 4902 || error.code === -32603) {
+    if (web3Error.code === 4902 || web3Error.code === -32603) {
       try {
         console.log(`Adding BSC ${ADDRESSES.CHAIN_ID === 97 ? 'Testnet' : 'Mainnet'} to wallet...`);
-        await window.ethereum!.request({
+        const windowWithEthereum = window as typeof window & { ethereum?: { request: (args: EthereumRequestParams) => Promise<unknown> } };
+        await windowWithEthereum.ethereum!.request({
           method: 'wallet_addEthereumChain',
           params: [{
             chainId: `0x${ADDRESSES.CHAIN_ID.toString(16)}`,
@@ -123,16 +141,16 @@ export async function switchToBNBChain(): Promise<void> {
           }]
         });
         console.log(`BSC ${ADDRESSES.CHAIN_ID === 97 ? 'Testnet' : 'Mainnet'} added successfully`);
-      } catch (addError: any) {
+      } catch (addError: unknown) {
         console.error('Failed to add BSC network:', addError);
         throw new NetworkSwitchError(`Failed to add BSC ${ADDRESSES.CHAIN_ID === 97 ? 'Testnet' : 'Mainnet'} to your wallet. Please add it manually.`);
       }
-    } else if (error.code === 4001) {
+    } else if (web3Error.code === 4001) {
       throw new NetworkSwitchError('Network switch cancelled by user.');
-    } else if (error.code === -32002) {
+    } else if (web3Error.code === -32002) {
       throw new NetworkSwitchError('A request is already pending in your wallet. Please check your wallet and try again.');
     } else {
-      throw new NetworkSwitchError(`Failed to switch network: ${error.message}`);
+      throw new NetworkSwitchError(`Failed to switch network: ${web3Error.message || 'Unknown error'}`);
     }
   }
 }
@@ -159,9 +177,10 @@ export async function getWeb3Provider(): Promise<ethers.BrowserProvider> {
   try {
     // Test the connection
     await provider.getNetwork();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Provider connection test failed:', error);
-    if (error.code === -32002) {
+    const web3Error = error as { code?: number };
+    if (web3Error.code === -32002) {
       throw new NetworkSwitchError('A request is already pending in your wallet. Please check your wallet and try again.');
     }
     throw new WalletNotInstalledError();

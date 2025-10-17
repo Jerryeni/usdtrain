@@ -1,18 +1,40 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePresale } from '../../providers/provider';
 import { isWalletAvailable } from '../../lib/web3/provider';
-import { toast } from '../../components/ui/use-toast';
-import dynamic from 'next/dynamic';
 
 export default function Dashboard() {
   const [isClient, setIsClient] = useState(false);
-  const [totalEarnings, setTotalEarnings] = useState(1247.85);
-  const [activeReferrals, setActiveReferrals] = useState(23);
   const [fontAwesomeLoaded, setFontAwesomeLoaded] = useState(false);
   const { userAddress, initWallet, uccInfo, userUCCInfo, isConnecting } = usePresale();
+
+  const animateCounter = useCallback((elementId: string, targetValue: number, duration = 2000) => {
+    if (!isClient) return;
+
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    const startValue = 0;
+    const increment = targetValue / (duration / 16);
+    let currentValue = startValue;
+
+    const timer = setInterval(() => {
+      currentValue += increment;
+      if (currentValue >= targetValue) {
+        currentValue = targetValue;
+        clearInterval(timer);
+      }
+
+      if (elementId === 'total-earnings') {
+        element.textContent = '$' + currentValue.toFixed(2);
+      } else {
+        element.textContent = Math.floor(currentValue).toString();
+      }
+    }, 16);
+  }, [isClient]);
 
   // Wallet installation handler
   const handleInstallWallet = () => {
@@ -28,19 +50,10 @@ export default function Dashboard() {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: '0x61' }], // BSC Testnet
         });
-        toast({
-          title: "Network Switched",
-          description: "Successfully switched to BSC Testnet",
-          duration: 3000,
-        });
-      } catch (error: any) {
+        console.log("Network Switched: Successfully switched to BSC Testnet");
+      } catch (error: unknown) {
         console.error('Manual network switch failed:', error);
-        toast({
-          title: "Network Switch Failed",
-          description: "Please switch to BSC Testnet manually in your wallet",
-          variant: "destructive",
-          duration: 4000,
-        });
+        console.error("Network Switch Failed: Please switch to BSC Testnet manually in your wallet");
       }
     }
   };
@@ -92,32 +105,7 @@ export default function Dashboard() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [userUCCInfo]);
-
-  const animateCounter = (elementId: string, targetValue: number, duration = 2000) => {
-    if (!isClient) return;
-
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    const startValue = 0;
-    const increment = targetValue / (duration / 16);
-    let currentValue = startValue;
-
-    const timer = setInterval(() => {
-      currentValue += increment;
-      if (currentValue >= targetValue) {
-        currentValue = targetValue;
-        clearInterval(timer);
-      }
-
-      if (elementId === 'total-earnings') {
-        element.textContent = '$' + currentValue.toFixed(2);
-      } else {
-        element.textContent = Math.floor(currentValue).toString();
-      }
-    }, 16);
-  };
+  }, [userUCCInfo, animateCounter]);
 
   const toggleSidebar = () => {
     const sidebar = document.getElementById('sidebar');
@@ -213,9 +201,11 @@ export default function Dashboard() {
               )}
             </button>
             <div className="w-10 h-10 rounded-full overflow-hidden">
-              <img
+              <Image
                 src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg"
                 alt="Avatar"
+                width={40}
+                height={40}
                 className="w-full h-full object-cover"
               />
             </div>

@@ -121,8 +121,22 @@ export type UCCInfo = {
 }
 
 export type UserUCCInfo = {
-  userId:number;
-  usersInfo:any;
-  recentActivities:any[];
-  activityLength: any;
+  userId: number;
+  usersInfo: {
+    totalTokens: bigint;
+    totalInvestmentsUSDT: bigint;
+    totalInvestmentsBNB: bigint;
+    refCount: bigint;
+    referrer: string;
+    lastActivity: bigint;
+  } | null;
+  recentActivities: Array<{
+    id: bigint;
+    userId: bigint;
+    activityType: number;
+    amount: bigint;
+    timestamp: bigint;
+    txHash: string;
+  }>;
+  activityLength: number;
 }

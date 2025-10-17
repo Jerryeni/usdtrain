@@ -1,13 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Profile() {
-  const [isClient, setIsClient] = useState(false);
-
   useEffect(() => {
-    setIsClient(true);
 
     // Create animated rain effect
     function createRain() {
@@ -70,9 +68,11 @@ export default function Profile() {
       <section className="px-4 py-6">
         <div className="glass-card rounded-2xl p-6 slide-in text-center">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500/20 to-cyan-500/20 flex items-center justify-center mx-auto mb-4">
-            <img
+            <Image
               src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg"
               alt="Profile"
+              width={80}
+              height={80}
               className="w-full h-full object-cover rounded-full"
             />
           </div>

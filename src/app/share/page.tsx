@@ -4,11 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function Share() {
-  const [isClient, setIsClient] = useState(false);
-  const [referralLink, setReferralLink] = useState('https://usdtrain.com/ref/0xA4f9B3');
+  const [referralLink] = useState('https://usdtrain.com/ref/0xA4f9B3');
 
   useEffect(() => {
-    setIsClient(true);
 
     // Create animated rain effect
     function createRain() {
